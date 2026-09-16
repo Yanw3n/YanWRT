@@ -120,6 +120,10 @@ function remove_wifi() {
 
 # E87N has no radio. Strip filogic Wi-Fi defaults but keep hostapd package tree
 # so accidental kmod-mac80211 deps do not break apk install with missing hostapd-common.
+# ImmortalWrt openwrt-25.12 filogic target.mk ships:
+#   DEFAULT_PACKAGES += ... wpad-openssl ...
+#   DEFAULT_PROFILE:=openwrt_one
+# Both must be neutralized or defconfig re-pulls the Wi-Fi stack / wrong profile.
 function remove_wifi_mediatek_filogic() {
   local wifi_pkg_pattern='wpad[^[:space:]]*|hostapd[^[:space:]]*|kmod-mt76[^[:space:]]*|kmod-mt7915e|kmod-mt7916e|kmod-mt7996[^[:space:]]*|kmod-mac80211|kmod-cfg80211|iw[^[:space:]]*|iwinfo|wireless-regdb|mt7981-wo-firmware|mt7986-wo-firmware|mt7988-2p5g-phy-firmware'
   local f
@@ -131,6 +135,23 @@ function remove_wifi_mediatek_filogic() {
     [ -f "$f" ] || continue
     sed -i -E ":again; s/(^|[[:space:]])-?(${wifi_pkg_pattern})([[:space:]]|$)/ /g; t again; s/[[:space:]]+$//" "$f"
   done
+
+  local tmk='./target/linux/mediatek/filogic/target.mk'
+  if [ -f "$tmk" ]; then
+    # Force a known-good DEFAULT_PACKAGES line without wpad.
+    if grep -q '^DEFAULT_PACKAGES' "$tmk"; then
+      sed -i -E 's/^DEFAULT_PACKAGES \+.*/DEFAULT_PACKAGES += fitblk kmod-crypto-hw-safexcel uboot-envtools bridger/' "$tmk"
+    fi
+    # Prefer E87N profile instead of openwrt_one (Wi-Fi board).
+    if grep -q '^DEFAULT_PROFILE' "$tmk"; then
+      sed -i -E 's/^DEFAULT_PROFILE:=.*/DEFAULT_PROFILE:=edgepi_e87n/' "$tmk"
+    else
+      echo 'DEFAULT_PROFILE:=edgepi_e87n' >> "$tmk"
+    fi
+    echo "==== filogic target.mk after Wi-Fi strip ===="
+    grep -E '^(DEFAULT_PACKAGES|DEFAULT_PROFILE)' "$tmk" || true
+  fi
+
   echo "mediatek/filogic Wi-Fi default packages stripped for E87N"
 }
 
