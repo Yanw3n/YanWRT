@@ -197,7 +197,8 @@ jobs:
 
           make defconfig -j$(nproc)
 
-          # E87N is wired-only; defconfig may reselect filogic Wi-Fi defaults (mt76/mac80211).
+          # E87N is wired-only; defconfig reselects filogic wpad-openssl / openwrt_one Wi-Fi.
+          # Purge twice (defconfig in between). disable-e87n-wifi.sh exits 1 if anything remains =y.
           if [ "$WRT_CONFIG" = "E87N" ]; then
             chmod +x "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh"
             "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh" ./.config
@@ -205,6 +206,11 @@ jobs:
             "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh" ./.config
             echo "==== E87N wifi-related config after purge ===="
             grep -E 'CONFIG_PACKAGE_(kmod-mt76|kmod-mac80211|kmod-cfg80211|wpad|hostapd)|DEVICE_edgepi' ./.config || true
+            if ! grep -q '^CONFIG_TARGET_mediatek_filogic_DEVICE_edgepi_e87n=y' ./.config; then
+              echo "ERROR: E87N device symbol missing after defconfig" >&2
+              grep -E 'CONFIG_TARGET.*DEVICE|MULTI_PROFILE|DEFAULT_PROFILE' ./.config || true
+              exit 1
+            fi
           fi
 
           make clean -j$(nproc)
