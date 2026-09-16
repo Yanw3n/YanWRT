@@ -110,4 +110,36 @@ if [ "${WRT_CONFIG}" = "E87N" ]; then
 	else
 		echo "E87N patch dir missing; continuing!"
 	fi
+
+	# platform_copy_config hunk may drift across immortalwrt revisions; ensure board is listed.
+	PLAT="$WRT_ROOT/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh"
+	if [ -f "$PLAT" ] && ! grep -q 'edgepi,e87n' "$PLAT"; then
+		sed -i '/platform_copy_config()/,/^}/ {
+			/glinet,gl-xe3000|/a\\tedgepi,e87n|
+		}' "$PLAT"
+		echo "E87N inserted into platform_copy_config()"
+	elif [ -f "$PLAT" ]; then
+		echo "E87N already present in platform.sh"
+	fi
+
+	# Ensure Device/edgepi_e87n exists even if filogic.mk hunk context drifted
+	FILO="$WRT_ROOT/target/linux/mediatek/image/filogic.mk"
+	if [ -f "$FILO" ] && ! grep -q 'Device/edgepi_e87n' "$FILO"; then
+		cat >> "$FILO" <<'EOF'
+
+define Device/edgepi_e87n
+  DEVICE_VENDOR := EdgePi
+  DEVICE_MODEL := E87N
+  DEVICE_DTS := mt7987a-edgepi-e87n
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := kmod-hwmon-pwmfan kmod-usb3 kmod-nvme \
+	mt7987-2p5g-phy-firmware f2fsck mkf2fs automount
+  KERNEL_LOADADDR := 0x40000000
+  KERNEL_SIZE := 32768k
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += edgepi_e87n
+EOF
+		echo "E87N device profile appended to filogic.mk"
+	fi
 fi

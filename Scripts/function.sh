@@ -118,6 +118,22 @@ function remove_wifi() {
   rm -rf package/firmware/ipq-wifi
 }
 
+# E87N has no radio. Strip filogic Wi-Fi defaults but keep hostapd package tree
+# so accidental kmod-mac80211 deps do not break apk install with missing hostapd-common.
+function remove_wifi_mediatek_filogic() {
+  local wifi_pkg_pattern='wpad[^[:space:]]*|hostapd[^[:space:]]*|kmod-mt76[^[:space:]]*|kmod-mt7915e|kmod-mt7916e|kmod-mt7996[^[:space:]]*|kmod-mac80211|kmod-cfg80211|iw[^[:space:]]*|iwinfo|wireless-regdb|mt7981-wo-firmware|mt7986-wo-firmware|mt7988-2p5g-phy-firmware'
+  local f
+  for f in \
+    ./target/linux/mediatek/Makefile \
+    ./target/linux/mediatek/filogic/target.mk \
+    ./target/linux/mediatek/image/filogic.mk
+  do
+    [ -f "$f" ] || continue
+    sed -i -E ":again; s/(^|[[:space:]])-?(${wifi_pkg_pattern})([[:space:]]|$)/ /g; t again; s/[[:space:]]+$//" "$f"
+  done
+  echo "mediatek/filogic Wi-Fi default packages stripped for E87N"
+}
+
 function set_kernel_size() {
   #修改jdc ax1800 pro 的内核大小为12M
   image_file='./target/linux/qualcommax/image/ipq60xx.mk'
@@ -146,19 +162,21 @@ function generate_config() {
   local target=$(echo $WRT_ARCH | cut -d'_' -f2)
 
   #删除wifi依赖
-  if [[ "$WRT_CONFIG" == *"NOWIFI"* || "$WRT_CONFIG" == "E87N" ]]; then
+  if [[ "$WRT_CONFIG" == "E87N" ]]; then
+    remove_wifi_mediatek_filogic
+  elif [[ "$WRT_CONFIG" == *"NOWIFI"* ]]; then
     remove_wifi "$target"
   fi
 
   # NSS driver options are Qualcomm-only
   if [[ "$WRT_CONFIG" == IPQ* ]]; then
     set_nss_driver "$config_file"
+    set_kernel_size
   fi
 
   #增加ebpf
   cat_ebpf_config "$config_file"
   enable_skb_recycler "$config_file"
-  set_kernel_size
 
   #增加内核选项（按目标架构写入）
   if [[ -d "target/linux/mediatek" && "$WRT_CONFIG" == "E87N" ]]; then
