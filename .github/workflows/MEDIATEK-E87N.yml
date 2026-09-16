@@ -1,0 +1,45 @@
+# EdgePi E87N (MT7987A) build — YanWRT fork of DaeWRT-CI
+name: MEDIATEK-E87N
+
+on:
+  workflow_dispatch:
+    inputs:
+      PACKAGE:
+        description: '手动调整插件包，多个请用\\n符号隔开。'
+        required: false
+        type: string
+      TEST:
+        description: '仅输出配置文件，不编译固件。'
+        default: 'false'
+        required: false
+        type: boolean
+
+permissions: write-all
+
+jobs:
+  config:
+    name: ${{matrix.CONFIG}}
+    strategy:
+      fail-fast: false
+      matrix:
+        CONFIG: [E87N]
+        # Match Yanw3n/imagebuilder ImmortalWrt 25.12 base for E87N DTS/patches
+        SOURCE: [immortalwrt/immortalwrt]
+        BRANCH: [openwrt-25.12]
+
+    uses: ./.github/workflows/WRT-CORE.yml
+    with:
+      WRT_CONFIG: ${{matrix.CONFIG}}
+      WRT_THEME: argon
+      WRT_NAME: YanWRT
+      WRT_SSID: YanWRT
+      WRT_WORD: 12345678
+      WRT_IP: 172.16.25.1
+      WRT_PW: 无
+      WRT_REPO: https://github.com/${{matrix.SOURCE}}.git
+      WRT_BRANCH: ${{matrix.BRANCH}}
+      WRT_SOURCE: ${{matrix.SOURCE}}
+      WRT_PACKAGE: ${{inputs.PACKAGE}}
+      WRT_TEST: ${{inputs.TEST}}
+      WRT_ARCH: mediatek
+      CI_NAME: ${{github.workflow}}

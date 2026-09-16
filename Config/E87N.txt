@@ -1,0 +1,23 @@
+# EdgePi / Hiveton E87N (MT7987A filogic, no Wi-Fi, sysupgrade-only)
+CONFIG_TARGET_mediatek=y
+CONFIG_TARGET_mediatek_filogic=y
+CONFIG_TARGET_MULTI_PROFILE=n
+# Match DaeWRT device symbol style (TARGET_DEVICE_*_DEVICE_*)
+CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_edgepi_e87n=y
+
+# Wired-only: disable default Wi-Fi stack
+# CONFIG_PACKAGE_wpad-openssl is not set
+# CONFIG_PACKAGE_wpad is not set
+
+# E87N vendor fan control (from Yanw3n/imagebuilder)
+CONFIG_PACKAGE_fancontrol=y
+CONFIG_PACKAGE_luci-app-fancontrol=y
+CONFIG_PACKAGE_luci-i18n-fancontrol-zh-cn=y
+CONFIG_PACKAGE_kmod-hwmon-pwmfan=y
+
+# Display (optional NV3007 panel support from imagebuilder patches)
+CONFIG_PACKAGE_kmod-fb-tft=y
+
+# Ensure dae geodata helpers stay selected with GENERAL.txt luci-app-dae
+CONFIG_PACKAGE_v2ray-geodata=y
+CONFIG_PACKAGE_v2ray-geodata-updater=y
