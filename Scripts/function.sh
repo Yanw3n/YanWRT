@@ -141,22 +141,34 @@ EOF
 
 function generate_config() {
   config_file=".config"
-  #如配置文件已存在
-  cat $GITHUB_WORKSPACE/Config/${WRT_CONFIG}.txt $GITHUB_WORKSPACE/Config/GENERAL.txt  > $config_file
+  # YanWRT: single-machine configs are self-contained (no GENERAL.txt)
+  cat "$GITHUB_WORKSPACE/Config/${WRT_CONFIG}.txt" > "$config_file"
   local target=$(echo $WRT_ARCH | cut -d'_' -f2)
 
   #删除wifi依赖
-  if [[ "$WRT_CONFIG" == *"NOWIFI"* ]]; then
-    remove_wifi $target
+  if [[ "$WRT_CONFIG" == *"NOWIFI"* || "$WRT_CONFIG" == "E87N" ]]; then
+    remove_wifi "$target"
   fi
 
-  set_nss_driver $config_file
+  # NSS driver options are Qualcomm-only
+  if [[ "$WRT_CONFIG" == IPQ* ]]; then
+    set_nss_driver "$config_file"
+  fi
+
   #增加ebpf
-  cat_ebpf_config $config_file
-  enable_skb_recycler $config_file
+  cat_ebpf_config "$config_file"
+  enable_skb_recycler "$config_file"
   set_kernel_size
-  #增加内核选项
-  cat_kernel_config "target/linux/qualcommax/${target}/config-default"
+
+  #增加内核选项（按目标架构写入）
+  if [[ -d "target/linux/mediatek" && "$WRT_CONFIG" == "E87N" ]]; then
+    for cfg in target/linux/mediatek/filogic/config-*; do
+      [ -f "$cfg" ] || continue
+      cat_kernel_config "$cfg"
+    done
+  elif [[ -n "$target" && -f "target/linux/qualcommax/${target}/config-default" ]]; then
+    cat_kernel_config "target/linux/qualcommax/${target}/config-default"
+  fi
 }
 
 

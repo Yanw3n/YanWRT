@@ -3,19 +3,19 @@
 #WRT_REPO='https://github.com/LiBwrt/openwrt-6.x'
 #WRT_BRANCH='k6.12-nss'
 
-WRT_REPO='https://github.com/davidtall/immortalwrt'
-WRT_BRANCH='viking-main'
+WRT_REPO='https://github.com/immortalwrt/immortalwrt'
+WRT_BRANCH='openwrt-25.12'
 
-#WRT_REPO='https://github.com/VIKINGYFY/immortalwrt'
-#WRT_BRANCH='main'
+#WRT_REPO='https://github.com/davidtall/immortalwrt'
+#WRT_BRANCH='viking-main'
 
 if [ -n "$1" ]; then
     # 如果有传递参数，赋值给WRT_TARGET
     filename=$(basename "$1")
     export WRT_CONFIG="${filename%.*}"
 else
-    # 如果没有传递参数，设置默认值
-    export WRT_CONFIG="IPQ60XX-NOWIFI"
+    # YanWRT: only E87N is supported
+    export WRT_CONFIG="E87N"
 fi
 
 if [ -n "$2" ]; then
@@ -27,14 +27,14 @@ export GITHUB_WORKSPACE=$(pwd)
 export WRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d_%H.%M.%S")
 export WRT_VER=$(echo $WRT_REPO | cut -d '/' -f 5-)-$WRT_BRANCH
 export WRT_TYPE=$(sed -n "1{s/^#//;s/\r$//;p;q}" $GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt)
-export WRT_NAME='OWRT'
-export WRT_SSID='OWRT'
+export WRT_NAME='YanWRT'
+export WRT_SSID='YanWRT'
 export WRT_WORD='12345678'
 export WRT_THEME='argon'
-export WRT_IP='192.168.10.1'
-export WRT_CI='WSL-OpenWRT-CI'
+export WRT_IP='172.16.25.1'
+export WRT_CI='WSL-YanWRT'
 export WRT_ARCH=$(sed -n 's/.*_DEVICE_\(.*\)_DEVICE_.*/\1/p' $GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt | head -n 1)
-export CI_NAME='QCA-6.18-LiBwrt'
+export CI_NAME='MEDIATEK-E87N'
 export WRT_TARGET=$(grep -m 1 -oP '^CONFIG_TARGET_\K[\w]+(?=\=y)' $GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt | tr '[:lower:]' '[:upper:]')
 
 . $GITHUB_WORKSPACE/Scripts/function.sh

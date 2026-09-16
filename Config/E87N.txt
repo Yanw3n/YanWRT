@@ -1,23 +1,104 @@
-# EdgePi / Hiveton E87N (MT7987A filogic, no Wi-Fi, sysupgrade-only)
+# EdgePi / Hiveton E87N only (MT7987A filogic, no Wi-Fi, sysupgrade-only)
 CONFIG_TARGET_mediatek=y
 CONFIG_TARGET_mediatek_filogic=y
 CONFIG_TARGET_MULTI_PROFILE=n
-# Match DaeWRT device symbol style (TARGET_DEVICE_*_DEVICE_*)
+CONFIG_TARGET_PER_DEVICE_ROOTFS=n
+CONFIG_TARGET_ROOTFS_INITRAMFS=n
 CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_edgepi_e87n=y
 
 # Wired-only: disable default Wi-Fi stack
 # CONFIG_PACKAGE_wpad-openssl is not set
 # CONFIG_PACKAGE_wpad is not set
 
+# DAE + geodata (from DaeWRT-CI)
+CONFIG_PACKAGE_luci-app-dae=y
+CONFIG_PACKAGE_v2ray-geodata=y
+CONFIG_PACKAGE_v2ray-geodata-updater=y
+
 # E87N vendor fan control (from Yanw3n/imagebuilder)
 CONFIG_PACKAGE_fancontrol=y
 CONFIG_PACKAGE_luci-app-fancontrol=y
 CONFIG_PACKAGE_luci-i18n-fancontrol-zh-cn=y
 CONFIG_PACKAGE_kmod-hwmon-pwmfan=y
-
-# Display (optional NV3007 panel support from imagebuilder patches)
 CONFIG_PACKAGE_kmod-fb-tft=y
 
-# Ensure dae geodata helpers stay selected with GENERAL.txt luci-app-dae
-CONFIG_PACKAGE_v2ray-geodata=y
-CONFIG_PACKAGE_v2ray-geodata-updater=y
+# Common apps
+CONFIG_PACKAGE_luci-app-autoreboot=y
+CONFIG_PACKAGE_luci-app-upnp=y
+CONFIG_PACKAGE_luci-app-ddns-go=y
+CONFIG_PACKAGE_luci-proto-wireguard=y
+CONFIG_PACKAGE_luci-app-vlmcsd=y
+CONFIG_PACKAGE_luci-app-cpufreq=y
+CONFIG_PACKAGE_luci-app-attendedsysupgrade=n
+CONFIG_PACKAGE_luci-app-wol=n
+
+# Build options
+CONFIG_CCACHE=y
+CONFIG_DEVEL=y
+CONFIG_FEED_video=n
+
+# Kernel / net packages useful on E87N
+CONFIG_PACKAGE_kmod-fs-btrfs=y
+CONFIG_PACKAGE_kmod-fs-ext4=y
+CONFIG_PACKAGE_kmod-fs-f2fs=y
+CONFIG_PACKAGE_kmod-fuse=y
+CONFIG_PACKAGE_kmod-inet-diag=y
+CONFIG_PACKAGE_kmod-mtd-rw=y
+CONFIG_PACKAGE_kmod-netlink-diag=y
+CONFIG_PACKAGE_kmod-nf-nat6=y
+CONFIG_PACKAGE_kmod-nft-arp=y
+CONFIG_PACKAGE_kmod-nft-bridge=y
+CONFIG_PACKAGE_kmod-nft-connlimit=y
+CONFIG_PACKAGE_kmod-nft-core=y
+CONFIG_PACKAGE_kmod-nft-dup-inet=y
+CONFIG_PACKAGE_kmod-nft-fib=y
+CONFIG_PACKAGE_kmod-nft-fullcone=y
+CONFIG_PACKAGE_kmod-nft-nat=y
+CONFIG_PACKAGE_kmod-nft-netdev=y
+CONFIG_PACKAGE_kmod-nft-offload=y
+CONFIG_PACKAGE_kmod-nft-queue=y
+CONFIG_PACKAGE_kmod-nft-socket=y
+CONFIG_PACKAGE_kmod-nft-tproxy=y
+CONFIG_PACKAGE_kmod-nft-xfrm=y
+CONFIG_PACKAGE_kmod-nvme=y
+CONFIG_PACKAGE_kmod-tun=y
+CONFIG_PACKAGE_kmod-usb3=y
+CONFIG_PACKAGE_kmod-usb-core=y
+CONFIG_PACKAGE_kmod-usb-storage=y
+CONFIG_PACKAGE_kmod-usb-storage-extras=y
+CONFIG_PACKAGE_kmod-usb-storage-uas=y
+CONFIG_PACKAGE_kmod-veth=y
+CONFIG_PACKAGE_kmod-wireguard=y
+CONFIG_PACKAGE_kmod-sched-bpf=y
+CONFIG_PACKAGE_kmod-xdp-sockets-diag=y
+
+# Userspace
+CONFIG_PACKAGE_autocore=y
+CONFIG_PACKAGE_automount=y
+CONFIG_PACKAGE_blkid=y
+CONFIG_PACKAGE_block-mount=y
+CONFIG_PACKAGE_btop=y
+CONFIG_PACKAGE_curl=y
+CONFIG_PACKAGE_e2fsprogs=y
+CONFIG_PACKAGE_f2fsck=y
+CONFIG_PACKAGE_mkf2fs=y
+CONFIG_PACKAGE_btrfs-progs=y
+CONFIG_PACKAGE_iperf3=y
+CONFIG_PACKAGE_ip-full=y
+CONFIG_PACKAGE_nvme-cli=y
+CONFIG_PACKAGE_openssh-sftp-server=y
+CONFIG_PACKAGE_openssl-util=y
+CONFIG_PACKAGE_smartmontools=y
+CONFIG_PACKAGE_tcpdump=y
+CONFIG_PACKAGE_usbutils=y
+CONFIG_PACKAGE_luci=y
+CONFIG_PACKAGE_luci-base=y
+CONFIG_PACKAGE_luci-compat=y
+CONFIG_LUCI_LANG_zh_Hans=y
+CONFIG_PACKAGE_default-settings=y
+CONFIG_PACKAGE_default-settings-chn=y
+CONFIG_PACKAGE_bash=y
+CONFIG_PACKAGE_bind-dig=y
+CONFIG_PACKAGE_bind-nslookup=y
+CONFIG_PACKAGE_kmod-tcp-bbr=y
+CONFIG_DEFAULT_tcp_cubic=y
