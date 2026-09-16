@@ -195,7 +195,19 @@ jobs:
           
           $GITHUB_WORKSPACE/Scripts/Settings.sh
 
-          make defconfig -j$(nproc) && make clean -j$(nproc)
+          make defconfig -j$(nproc)
+
+          # E87N is wired-only; defconfig may reselect filogic Wi-Fi defaults (mt76/mac80211).
+          if [ "$WRT_CONFIG" = "E87N" ]; then
+            chmod +x "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh"
+            "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh" ./.config
+            make defconfig -j$(nproc)
+            "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh" ./.config
+            echo "==== E87N wifi-related config after purge ===="
+            grep -E 'CONFIG_PACKAGE_(kmod-mt76|kmod-mac80211|kmod-cfg80211|wpad|hostapd)|DEVICE_edgepi' ./.config || true
+          fi
+
+          make clean -j$(nproc)
 
       - name: Download Packages
         if: env.WRT_TEST != 'true'
