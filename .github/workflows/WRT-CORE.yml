@@ -128,16 +128,16 @@ jobs:
 
       - name: Initialization Values
         run: |
-          echo "WRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d-%H.%M.%S")" >> $GITHUB_ENV
+          echo "WRT_DATE=$(TZ=UTC-8 date +\"%y.%m.%d-%H.%M.%S\")" >> $GITHUB_ENV
           echo "WRT_MARK=${GITHUB_REPOSITORY%%/*}" >> $GITHUB_ENV
           echo "WRT_INFO=${WRT_SOURCE%%/*}" >> $GITHUB_ENV
-          echo "WRT_TARGET=$(grep -m 1 -oP '^CONFIG_TARGET_\K[\w]+(?=\=y)' ./Config/$WRT_CONFIG.txt)" >> $GITHUB_ENV
+          echo "WRT_TARGET=$(grep -m 1 -oP '^CONFIG_TARGET_\\K[\\w]+(?=\\=y)' ./Config/$WRT_CONFIG.txt)" >> $GITHUB_ENV
           echo "WRT_KVER=none" >> $GITHUB_ENV
           echo "WRT_LIST=none" >> $GITHUB_ENV
 
           echo "WRT_CI=$WRT_CI" >> $GITHUB_ENV
           [[ -z $WRT_ARCH ]] && {
-            export WRT_ARCH=$(sed -n 's/.*_DEVICE_\(.*\)_DEVICE_.*/\1/p' $GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt | head -n 1)
+            export WRT_ARCH=$(sed -n 's/.*_DEVICE_\\(.*\\)_DEVICE_.*/\\1/p' $GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt | head -n 1)
             echo "WRT_ARCH=$WRT_ARCH" >> $GITHUB_ENV
           }
           echo "$WRT_REPO/$WRT_BRANCH" > "$GITHUB_WORKSPACE/repo_flag"
@@ -149,7 +149,7 @@ jobs:
 
       - name: Check Scripts
         run: |
-          find ./ -maxdepth 3 -type f -iregex ".*\(txt\|sh\)$" -exec dos2unix {} \; -exec chmod +x {} \;
+          find ./ -maxdepth 3 -type f -iregex ".*\\(txt\\|sh\)$" -exec dos2unix {} \\; -exec chmod +x {} \\;
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -164,9 +164,9 @@ jobs:
 
       - name: Refresh the cache
         run: |
-          if [ -d "./wrt/staging_dir" ]; then
-            find "./wrt/staging_dir" -type d -name "stamp" -not -path "*target*" | while read -r dir; do
-                find "$dir" -type f -exec touch {} +
+          if [ -d \"./wrt/staging_dir\" ]; then
+            find \"./wrt/staging_dir\" -type d -name \"stamp\" -not -path \"*target*\" | while read -r dir; do
+                find \"$dir\" -type f -exec touch {} +
             done
           fi            
 
@@ -199,15 +199,15 @@ jobs:
 
           # E87N is wired-only; defconfig reselects filogic wpad-openssl / openwrt_one Wi-Fi.
           # Purge twice (defconfig in between). disable-e87n-wifi.sh exits 1 if anything remains =y.
-          if [ "$WRT_CONFIG" = "E87N" ]; then
-            chmod +x "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh"
-            "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh" ./.config
+          if [ \"$WRT_CONFIG\" = \"E87N\" ]; then
+            chmod +x \"$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh\"
+            \"$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh\" ./.config
             make defconfig -j$(nproc)
-            "$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh" ./.config
-            echo "==== E87N wifi-related config after purge ===="
+            \"$GITHUB_WORKSPACE/Scripts/disable-e87n-wifi.sh\" ./.config
+            echo \"==== E87N wifi-related config after purge ====\"
             grep -E 'CONFIG_PACKAGE_(kmod-mt76|kmod-mac80211|kmod-cfg80211|wpad|hostapd)|DEVICE_edgepi' ./.config || true
             if ! grep -q '^CONFIG_TARGET_mediatek_filogic_DEVICE_edgepi_e87n=y' ./.config; then
-              echo "ERROR: E87N device symbol missing after defconfig" >&2
+              echo \"ERROR: E87N device symbol missing after defconfig\" >&2
               grep -E 'CONFIG_TARGET.*DEVICE|MULTI_PROFILE|DEFAULT_PROFILE' ./.config || true
               exit 1
             fi
@@ -233,45 +233,53 @@ jobs:
         run: |
           # 获取缓存列表并删除
           gh cache list --key ${{ env.WRT_ARCH }}-${{ hashFiles('**/repo_flag') }}- --json key --jq '.[] | .key' | while read -r key; do
-            gh cache delete "$key"
+            gh cache delete \"$key\"
           done
           # 输出缓存状态
-          echo "========cache status========"
-          echo "ccache: $(du -sh ./wrt/.ccache | cut -f 1)"
-          echo "staging: $(du -sh ./wrt/staging_dir | cut -f 1)"
+          echo \"========cache status========\"
+          echo \"ccache: $(du -sh ./wrt/.ccache | cut -f 1)\"
+          echo \"staging: $(du -sh ./wrt/staging_dir | cut -f 1)\"
 
       - name: Machine Information
         run: |
           cd ./wrt/
 
-          echo "======================="
-          lscpu | grep -E "name|Core|Thread"
-          echo "======================="
+          echo \"=======================\"
+          lscpu | grep -E \"name|Core|Thread\"
+          echo \"=======================\"
           df -h
-          echo "======================="
+          echo \"=======================\"
           du -h --max-depth=1
-          echo "======================="
+          echo \"=======================\"
 
       - name: Package Firmware
         run: |
           cd ./wrt/ && mkdir ./upload/
 
-          cp -f ./.config ./upload/Config-"$WRT_CONFIG"-"$WRT_INFO"-"$WRT_BRANCH"-"$WRT_DATE".txt
+          cp -f ./.config ./upload/Config-\"$WRT_CONFIG\"-\"$WRT_INFO\"-\"$WRT_BRANCH\"-\"$WRT_DATE\".txt
 
           if [[ $WRT_TEST != 'true' ]]; then
-            echo "WRT_KVER=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^kernel - \K[\d\.]+' {} \;)" >> $GITHUB_ENV
-            echo "WRT_LIST=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^luci-(app|theme)[^ ]*' {} \; | tr '\n' ' ')" >> $GITHUB_ENV
+            echo \"WRT_KVER=$(find ./bin/targets/ -type f -name \"*.manifest\" -exec grep -oP '^kernel - \\K[\\d\\.]+' {} \\;)\" >> $GITHUB_ENV
+            echo \"WRT_LIST=$(find ./bin/targets/ -type f -name \"*.manifest\" -exec grep -oP '^luci-(app|theme)[^ ]*' {} \\; | tr '\\n' ' ')\" >> $GITHUB_ENV
 
-            find ./bin/targets/ -iregex ".*\(buildinfo\|json\|sha256sums\|packages\)$" -exec rm -rf {} +
+            find ./bin/targets/ -iregex \".*\\(buildinfo\\|json\\|sha256sums\\|packages\\)$\" -exec rm -rf {} +
 
-            for FILE in $(find ./bin/targets/ -type f -iname "*$WRT_TARGET*") ; do
+            for FILE in $(find ./bin/targets/ -type f -iname \"*$WRT_TARGET*\") ; do
               EXT=$(basename $FILE | cut -d '.' -f 2-)
-              NAME=$(basename $FILE | cut -d '.' -f 1 | grep -io "\($WRT_TARGET\).*")
-              NEW_FILE="$NAME"-"$WRT_DATE"."$EXT"
+              NAME=$(basename $FILE | cut -d '.' -f 1 | grep -io \"\\($WRT_TARGET\\).*\")
+              NEW_FILE=\"$NAME\"-\"$WRT_DATE\".\"$EXT\"
               mv -f $FILE ./upload/$NEW_FILE
             done
 
-            find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
+            # E87N-only: do NOT dump every filogic mt798x-*-bl2.bin / unrelated image.
+            # Device sysupgrade/manifest already moved above via *mediatek* match.
+            # Optionally keep MT7987 BL2 for recovery; delete the rest.
+            if [ \"$WRT_CONFIG\" = \"E87N\" ]; then
+              find ./bin/targets/ -type f -iname 'mt7987-ram-comb-bl2.bin' -exec mv -f {} ./upload/ \\;
+              find ./bin/targets/ -type f -delete
+            else
+              find ./bin/targets/ -type f -exec mv -f {} ./upload/ \\;
+            fi
 
             make clean -j$(nproc)
           fi
@@ -282,11 +290,9 @@ jobs:
           tag_name: ${{env.CI_NAME}}-${{env.WRT_CONFIG}}_${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            这是个平台固件包，内含多个设备！
-            请注意选择你需要的设备固件！
-            不要问，刷就完事了！
-
-            全系带开源硬件加速，别问了！
+            YanWRT E87N（EdgePi / Hiveton MT7987A）固件。
+            刷机请用：`*edgepi_e87n*sysupgrade*.bin`
+            （有线机型，无 Wi-Fi；`mt7987-*-bl2.bin` 仅恢复用，日常升级不需要。）
 
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
@@ -297,9 +303,6 @@ jobs:
 
             登录地址：${{env.WRT_IP}}
             登录密码：${{env.WRT_PW}}
-
-            WIFI名称：${{env.WRT_SSID}}
-            WIFI密码：${{env.WRT_WORD}}
 
             内核版本：${{env.WRT_KVER}}
             插件列表：${{env.WRT_LIST}}
