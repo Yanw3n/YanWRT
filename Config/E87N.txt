@@ -75,6 +75,9 @@ CONFIG_PACKAGE_kmod-nft-tproxy=y
 CONFIG_PACKAGE_kmod-nft-xfrm=y
 CONFIG_PACKAGE_kmod-nvme=y
 CONFIG_PACKAGE_kmod-tun=y
+# External LAN 2.5G PHY (RTL8221B on gmac0 / 2500base-x)
+CONFIG_PACKAGE_kmod-phy-realtek=y
+CONFIG_PACKAGE_mt7987-2p5g-phy-firmware=y
 CONFIG_PACKAGE_kmod-usb3=y
 CONFIG_PACKAGE_kmod-usb-core=y
 CONFIG_PACKAGE_kmod-usb-ohci=y

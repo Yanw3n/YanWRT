@@ -81,7 +81,7 @@ index 01670e4..fa21d86 100644
 +  BOARD_NAME := edgepi,e87n
 +  SUPPORTED_DEVICES += edgepi,e87n
 +  DEVICE_PACKAGES := kmod-hwmon-pwmfan kmod-usb3 kmod-nvme \
-+	mt7987-2p5g-phy-firmware f2fsck mkf2fs automount
++	kmod-phy-realtek mt7987-2p5g-phy-firmware f2fsck mkf2fs automount
 +  KERNEL_LOADADDR := 0x40000000
 +  KERNEL_SIZE := 32768k
 +  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb

@@ -135,7 +135,7 @@ define Device/edgepi_e87n
   BOARD_NAME := edgepi,e87n
   SUPPORTED_DEVICES += edgepi,e87n
   DEVICE_PACKAGES := kmod-hwmon-pwmfan kmod-usb3 kmod-nvme \
-	mt7987-2p5g-phy-firmware f2fsck mkf2fs automount
+	kmod-phy-realtek mt7987-2p5g-phy-firmware f2fsck mkf2fs automount
   KERNEL_LOADADDR := 0x40000000
   KERNEL_SIZE := 32768k
   KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
@@ -159,6 +159,12 @@ EOF
 				/KERNEL_SIZE := 32768k/a\  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb\n  KERNEL_INITRAMFS := kernel-bin | lzma | \\\n\tfit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
 			}' "$FILO"
 			echo "E87N KERNEL FIT recipe injected into existing filogic.mk profile"
+		fi
+		if ! grep -A20 'define Device/edgepi_e87n' "$FILO" | grep -q 'kmod-phy-realtek'; then
+			sed -i '/define Device\/edgepi_e87n/,/^endef$/ {
+				s/mt7987-2p5g-phy-firmware/kmod-phy-realtek mt7987-2p5g-phy-firmware/
+			}' "$FILO"
+			echo "E87N kmod-phy-realtek injected into DEVICE_PACKAGES"
 		fi
 	fi
 fi
