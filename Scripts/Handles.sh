@@ -132,14 +132,33 @@ define Device/edgepi_e87n
   DEVICE_MODEL := E87N
   DEVICE_DTS := mt7987a-edgepi-e87n
   DEVICE_DTS_DIR := ../dts
+  BOARD_NAME := edgepi,e87n
+  SUPPORTED_DEVICES += edgepi,e87n
   DEVICE_PACKAGES := kmod-hwmon-pwmfan kmod-usb3 kmod-nvme \
 	mt7987-2p5g-phy-firmware f2fsck mkf2fs automount
   KERNEL_LOADADDR := 0x40000000
   KERNEL_SIZE := 32768k
+  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += edgepi_e87n
 EOF
 		echo "E87N device profile appended to filogic.mk"
+	elif [ -f "$FILO" ] && grep -q 'Device/edgepi_e87n' "$FILO"; then
+		# Patch may have applied an older profile; force stock board id + FIT recipe.
+		if ! grep -q 'BOARD_NAME := edgepi,e87n' "$FILO"; then
+			sed -i '/define Device\/edgepi_e87n/,/^endef$/ {
+				/DEVICE_DTS_DIR := ..\/dts/a\  BOARD_NAME := edgepi,e87n\n  SUPPORTED_DEVICES += edgepi,e87n
+			}' "$FILO"
+			echo "E87N BOARD_NAME injected into existing filogic.mk profile"
+		fi
+		if ! grep -A20 'define Device/edgepi_e87n' "$FILO" | grep -q 'KERNEL := kernel-bin'; then
+			sed -i '/define Device\/edgepi_e87n/,/^endef$/ {
+				/KERNEL_SIZE := 32768k/a\  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb\n  KERNEL_INITRAMFS := kernel-bin | lzma | \\\n\tfit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+			}' "$FILO"
+			echo "E87N KERNEL FIT recipe injected into existing filogic.mk profile"
+		fi
 	fi
 fi

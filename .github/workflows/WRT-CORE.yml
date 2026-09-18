@@ -277,6 +277,21 @@ jobs:
             if [ "$WRT_CONFIG" = "E87N" ]; then
               find ./bin/targets/ -type f -iname 'mt7987-ram-comb-bl2.bin' -exec mv -f {} ./upload/ \;
               find ./bin/targets/ -type f -delete
+
+              # Hard-fail if board id is not the stock U-Boot form edgepi,e87n
+              IMG="$(ls ./upload/*edgepi*sysupgrade*.bin 2>/dev/null | head -n1)"
+              if [ -z "$IMG" ]; then
+                echo "ERROR: E87N sysupgrade image missing in upload/" >&2
+                ls -la ./upload/ >&2 || true
+                exit 1
+              fi
+              BOARD="$(tar -xOf "$IMG" --wildcards 'sysupgrade-*/CONTROL' 2>/dev/null | tr -d '\r' | sed -n 's/^BOARD=//p' | head -n1)"
+              echo "E87N sysupgrade CONTROL BOARD=$BOARD"
+              if [ "$BOARD" != "edgepi,e87n" ]; then
+                echo "ERROR: BOARD must be 'edgepi,e87n' (stock/U-Boot id), got '$BOARD'" >&2
+                tar -tf "$IMG" | head -n 20 >&2 || true
+                exit 1
+              fi
             else
               find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
             fi
@@ -291,8 +306,9 @@ jobs:
           files: ./wrt/upload/*.*
           body: |
             YanWRT E87N（EdgePi / Hiveton MT7987A）固件。
-            刷机请用：`*edgepi_e87n*sysupgrade*.bin`
+            刷机请用：`*sysupgrade*.bin`（CONTROL 必须是 `BOARD=edgepi,e87n`）。
             （有线机型，无 Wi-Fi；`mt7987-*-bl2.bin` 仅恢复用，日常升级不需要。）
+            若无法启动：按住 Reset 上电进入 U-Boot Web `192.168.1.1`，刷回原厂 HiGoROS。
 
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
