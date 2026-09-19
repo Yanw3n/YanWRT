@@ -4,28 +4,29 @@ Subject: [PATCH] mediatek: filogic: add EdgePi E87N profile and upgrade
 
 Add the E87N image profile and route its GPT-labelled eMMC kernel and
 rootfs partitions through the existing sysupgrade tar implementation.
+Both 2.5G ports are placed in br-lan for first bring-up reliability.
 ---
- .../filogic/base-files/etc/board.d/02_network      |  1 +
+ .../filogic/base-files/etc/board.d/02_network      |  6 ++++++
  .../filogic/base-files/lib/upgrade/platform.sh     |  3 +++
  target/linux/mediatek/image/filogic.mk             | 19 +++++++++++++++++++
- 3 files changed, 23 insertions(+)
+ 3 files changed, 28 insertions(+)
 
 diff --git a/target/linux/mediatek/filogic/base-files/etc/board.d/02_network b/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
-index 53cfaf5..e16ebdd 100644
+index 53cfaf5..e87n001 100644
 --- a/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
 +++ b/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
-@@ -139,10 +139,11 @@ mediatek_setup_interfaces()
- 	airpi,ap3000m|\
- 	bananapi,bpi-r3-mini|\
- 	edgecore,eap111|\
-+	edgepi,e87n|\
- 	hiveton,h5000m|\
- 	huasifei,wh3000-emmc|\
- 	huasifei,wh3000-pro-emmc|\
- 	huasifei,wh3000-pro-nand|\
+@@ -145,6 +145,12 @@ mediatek_setup_interfaces()
  	wavlink,wl-wnt100x3|\
  	wavlink,wl-wnt100x3-ubootmod)
  		ucidef_set_interfaces_lan_wan eth0 eth1
++		;;
++	edgepi,e87n)
++		# Both 2.5G ports in br-lan (external RTL8221B on eth0 + internal PHY on eth1).
++		# Observed: link LED blinks but no TX frames on single-port LAN mapping.
++		ucidef_set_interface_lan "eth0 eth1"
+ 		;;
+ 	bazis,ax3000wm|\
+ 	cudy,m3000-v1|\
 diff --git a/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh b/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
 index 7f08521..c94373b 100644
 --- a/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh

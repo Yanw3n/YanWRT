@@ -129,6 +129,27 @@ if [ "${WRT_CONFIG}" = "E87N" ]; then
 		echo "E87N already present in platform.sh"
 	fi
 
+	# Force dual-port LAN mapping even if 02_network patch context drifted.
+	NET02="$WRT_ROOT/target/linux/mediatek/filogic/base-files/etc/board.d/02_network"
+	if [ -f "$NET02" ]; then
+		sed -i '/edgepi,e87n/d' "$NET02"
+		# Insert a dedicated case right after the common eth0/eth1 lan_wan stanza.
+		awk '
+			BEGIN { done=0 }
+			{
+				print
+				if (!done && $0 ~ /ucidef_set_interfaces_lan_wan eth0 eth1/) {
+					print "\t\t;;"
+					print "\tedgepi,e87n)"
+					print "\t\tucidef_set_interface_lan \"eth0 eth1\""
+					done=1
+				}
+			}
+		' "$NET02" > "$NET02.new" && mv -f "$NET02.new" "$NET02"
+		echo "E87N dual-port br-lan mapping injected into 02_network"
+		grep -n 'edgepi,e87n\|ucidef_set_interface_lan "eth0 eth1"\|ucidef_set_interfaces_lan_wan eth0 eth1' "$NET02" | head -n 30 || true
+	fi
+
 	# Ensure Device/edgepi_e87n exists even if filogic.mk hunk context drifted
 	FILO="$WRT_ROOT/target/linux/mediatek/image/filogic.mk"
 	if [ -f "$FILO" ] && ! grep -q 'Device/edgepi_e87n' "$FILO"; then
