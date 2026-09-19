@@ -100,6 +100,9 @@
 };
 
 &mdio {
+	/* External RTL8221B-class C45 PHY on LAN (gmac0 / 2500base-x).
+	 * Match stock HiGoROS DTB: realtek,aldps-enable is present there.
+	 */
 	phy0: phy@3 {
 		compatible = "ethernet-phy-ieee802.3-c45";
 		reg = <3>;
@@ -108,11 +111,14 @@
 		reset-deassert-us = <100000>;
 		interrupt-parent = <&pio>;
 		interrupts = <41 IRQ_TYPE_LEVEL_LOW>;
+		realtek,aldps-enable;
 	};
 
+	/* Built-in MT7987 2.5G PHY on WAN (gmac1). Stock sets phy-mode here too. */
 	phy1: phy@f {
 		compatible = "ethernet-phy-ieee802.3-c45";
 		reg = <15>;
+		phy-mode = "internal";
 		pinctrl-names = "i2p5gbe-led";
 		pinctrl-0 = <&i2p5gbe_led0_pins>;
 	};

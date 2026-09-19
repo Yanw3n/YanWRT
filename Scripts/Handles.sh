@@ -96,6 +96,13 @@ if [ "${WRT_CONFIG}" = "E87N" ]; then
 		echo "E87N overlay missing; continuing!"
 	fi
 
+	# Rootfs files (uci-defaults) from imagebuilder-style files/
+	if [ -d "$GITHUB_WORKSPACE/files" ]; then
+		mkdir -p "$WRT_ROOT/files"
+		cp -a "$GITHUB_WORKSPACE/files/." "$WRT_ROOT/files/"
+		echo "E87N rootfs files/ overlay applied!"
+	fi
+
 	if [ -d "$PATCHDIR" ]; then
 		shopt -s nullglob
 		for patch_file in "$PATCHDIR"/*.patch; do
