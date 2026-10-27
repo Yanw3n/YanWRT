@@ -44,7 +44,7 @@ CONFIG_PACKAGE_luci-proto-wireguard=y
 CONFIG_PACKAGE_luci-app-vlmcsd=y
 CONFIG_PACKAGE_luci-app-cpufreq=y
 CONFIG_PACKAGE_luci-app-attendedsysupgrade=n
-CONFIG_PACKAGE_luci-app-wol=n
+CONFIG_PACKAGE_luci-app-wolultra=n
 
 # Build options
 CONFIG_CCACHE=y
